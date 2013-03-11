@@ -1,0 +1,23 @@
+body 
+{
+    text-align:center;
+    min-width:500px;
+}
+
+#arena 
+{
+    margin:auto;
+}
+
+#board 
+{
+    width:160px;
+    margin:auto;
+    text-align:center;
+}
+
+.t3button 
+{
+    width:50px;
+    height:50px;
+}
