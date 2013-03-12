@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+    <head>
+        <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script>
+            
+            newgamereq = "{'type': 'new', 'gameId': None, 'gameType': 'tictactoe', 'move': None}";
+            var socketArr = [];
+            function doTest(){
+                for (var i = 0; i < 10; i++){
+                    createNewSocket();
+                }
+            }
+        
+            function createNewSocket(){
+                console.log("Creating a new socket...");
+                var ws = new WebSocket("ws://localhost:8888/gameserver");
+                ws.onopen = function(evt){ws.send(newgamereq);};
+                ws.onmessage = function(evt){document.getElementById("announcements").innerHTML = evt.data;};
+                return ws;
+            }
+        </script>
+    </head>
+    <body>
+        <button onclick=doTest()>Start Test</button>
+        <div id="announcements">
+        </div>
+    </body>
+</html>
+                         
