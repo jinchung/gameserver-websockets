@@ -1,15 +1,12 @@
-var gameType;
-var currMarker;
-var oppMarker;
-var gameId; 
-var isCurrPlayer = false;
 var ws = null; 
+var allGames = new AllGames();
 
 $(document).ready(function () {
 
     $("#gamestart").click(function(evt) {
         evt.preventDefault();
         var gameTypeResults = document.getElementsByName("gameType");
+        var gameType;
         for (var i=0; i < gameTypeResults.length; i++){
             if (gameTypeResults[i].checked){
                 gameType = gameTypeResults[i].id;
@@ -17,52 +14,105 @@ $(document).ready(function () {
         }
         newgamereq = "{'type': 'new', 'gameId': None, 'gameType': '" + gameType + "', 'move': None}";
         if (ws == null) {
-            alert('creating a new web socket');
             createWebsocket(newgamereq);
         } else {
-            alert('reusing websocket for new game');
             ws.send(newgamereq);
         }
     });
 
 });
 
+function AllGames(){
+}
+
+function Game(gameId, gameType, currMarker, oppMarker, isCurrPlayer){
+    this.gameId = gameId;
+    this.gameType = gameType;
+    this.currMarker = currMarker;
+    this.oppMarker = oppMarker;
+    this.isCurrPlayer = isCurrPlayer;
+}
 
 function createWebsocket(newgamereq){
     ws = new WebSocket("ws://localhost:8888/gameserver"); 
     ws.onopen = function() {ws.send(newgamereq);};
     ws.onmessage = function(evt) {
         var gameMsg = JSON.parse(evt.data);
-        document.getElementById("announcements").innerHTML = gameMsg.msg;
         switch(gameMsg.type){
             case "new":
-                gameId = gameMsg.gameId;
-                drawBoard(3); 
+                addGameToArena(gameMsg.gameId, gameMsg.gameType); 
                 break;
             case "play":
-                currMarker = gameMsg.currMarker;
-                oppMarker = gameMsg.oppMarker;
-                updateBoard(gameMsg.lastMove);
+                //shouldn't have to get currMarker and oppMarker everytime - only once
+                allGames[gameMsg.gameId].currMarker = gameMsg.currMarker;
+                allGames[gameMsg.gameId].oppMarker = gameMsg.oppMarker;
+                allGames[gameMsg.gameId].isCurrPlayer = gameMsg.isCurrPlayer;
+                updateBoard(gameMsg.gameId, gameMsg.lastMove);
                 break;
             case "announce":
                 break;
             case "gameover":
-                currMarker = gameMsg.currMarker;
-                oppMarker = gameMsg.oppMarker;
-                updateBoard(gameMsg.lastMove);
-                ws.close();
+                allGames[gameMsg.gameId].currMarker = gameMsg.currMarker;
+                allGames[gameMsg.gameId].oppMarker = gameMsg.oppMarker;
+                updateBoard(gameMsg.gameId, gameMsg.lastMove);
                 break;
             case "error":
                 break;
         }
+        if (gameMsg.gameId == null){
+            document.getElementById("globalMsg").innerHTML = gameMsg.msg;
+        } else {
+            gamePlay = document.getElementById(gameMsg.gameId);
+            announce = gamePlay.getElementsByClassName("announcements")[0];
+            announce.innerHTML = gameMsg.msg;
+            document.getElementById("globalMsg").innerHTML = '';
+        }
     };
 }
 
-function drawBoard(size){
-    board=document.getElementById("board")
+function addGameToArena(gid, gameType){
+    game = new Game(gid, gameType, null, null, null);
+    allGames[gid] = game;
+    arena=document.getElementById("arena");
+    
+    gamePlay=document.createElement("div");
+    gamePlay.className="gamePlay";
+    gamePlay.id=gid;
+
+    announce=document.createElement("div");
+    announce.className="announcements";
+
+    board = drawBoard(gid, gameType);
+
+    gameId=document.createElement("label");
+    gameId.className="gameId";
+    gameId.innerHTML="Game ID: " + gid;
+
+    arena.appendChild(gamePlay);
+    gamePlay.appendChild(announce);
+    gamePlay.appendChild(board);
+    gamePlay.appendChild(gameId);
+        
+}
+
+function drawBoard(gid, gameType){
+    board=document.createElement("div");
+
+    switch(gameType){
+        case "tictactoe":
+            drawTicTacToeBoard(gid, 3, board, gameType);
+            break;
+        case "go":
+            drawGoBoard(gid, board);
+            break;
+    }
+    return board;
+}
+
+function drawTicTacToeBoard(gid, size, board, gameType){
+    board.className="t3board";
     table=document.createElement("table");
     board.appendChild(table);
-
     for (var r=0; r<size; r++){
         var row = table.insertRow(r);
         for (var c=0; c<size; c++){
@@ -70,32 +120,101 @@ function drawBoard(size){
             var b = document.createElement("button");
             b.id = r + " " + c;
             b.className = "t3button";
-            b.onclick=function(){selectButton(this);};
+            b.onclick=function(){selectButton(this, gid, gameType);};
             col.appendChild(b);
         }
     }
 }
 
-function selectButton(b){
-    if (isCurrPlayer){
-        moveMsg = "{'type': 'move', 'gameId': " + gameId + ", 'gameType': '" + gameType + "', 'move': '" + b.id + "'}";
+function drawGoBoard(gid, board){
+    board.className="goboard";
+    canvas=document.createElement("canvas");
+    canvas.id="goboard";
+    canvas.width="500";
+    canvas.height="500";
+    canvas.onclick=function(evt){placeGoMarker(this, evt, gid);};
+    board.appendChild(canvas);
+}
+
+function placeGoMarker(canvas, evt, gid){
+    if (allGames[gid].isCurrPlayer){
+        rect=canvas.getBoundingClientRect();
+        x=evt.clientX - rect.left;
+        y=evt.clientY - rect.top;
+        ctx=canvas.getContext("2d"); 
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, 2 * Math.PI, false);
+        if (allGames[gid].currMarker == 'B'){
+            ctx.fillStyle="black";
+        }
+        else {
+            ctx.fillStyle="white";
+        }
+        ctx.fill();
+        alert('rect left is ' + rect.left + ' rect top is ' + rect.top);
+        alert('client x is ' + evt.clientX);
+        alert('client y is ' + evt.clientY);
+        move= evt.clientX + ' ' + evt.clientY;
+        moveMsg = "{'type': 'move', 'gameId': " + gid + ", 'gameType': 'go', 'move': '" + move + "'}";
         ws.send(moveMsg);
-        b.innerHTML=currMarker;
+        allGames[gid].isCurrPlayer = false;
+    } 
+    else {
+        alert('Not your turn. SIMMA DOWN.');
+    }
+}
+
+function selectButton(b, gid, gameType){
+    if (allGames[gid].isCurrPlayer){
+        moveMsg = "{'type': 'move', 'gameId': " + gid + ", 'gameType': '" + gameType + "', 'move': '" + b.id + "'}";
+        ws.send(moveMsg);
+        b.innerHTML=allGames[gid].currMarker;
         b.disabled=true;
-        isCurrPlayer = false;
+        allGames[gid].isCurrPlayer = false;
     }
     else {
-        alert('SIMMA DOWN. ur foe is being slow.');
+        alert('Not your turn. SIMMA DOWN.');
     }
 }
 
-function updateBoard(move){
+function updateBoard(gid, move){
     if (move != null){
-        b = document.getElementById(move);
-        b.innerHTML=oppMarker;
-        b.disabled = true;
+        switch (allGames[gid].gameType){
+            case "tictactoe":
+                updateTicTacToeBoard(gid, move);
+                break;
+            case "go":
+                updateGoBoard(gid, move);
+                break;
+        }
     }
-    isCurrPlayer = true;
 }
 
+function updateTicTacToeBoard(gid, move){
+    b = document.getElementById(move);
+    b.innerHTML=allGames[gid].oppMarker;
+    b.disabled = true;
+    allGames[gid].isCurrPlayer = true;
+}
 
+function updateGoBoard(gid, move){
+    canvas = document.getElementById("goboard");
+    ctx = canvas.getContext("2d");
+    rect=canvas.getBoundingClientRect();
+    mvs = move.split(" ");
+    x=mvs[0] - rect.left;
+    y=mvs[1] - rect.top;
+    alert('rect left is ' + rect.left);
+    alert('rect right is ' + rect.top);
+    alert('x is ' + mvs[0]);
+    alert('y is ' + mvs[1]);
+    ctx.beginPath();
+    ctx.arc(x, y, 10, 0, 2 * Math.PI, false);
+    if (allGames[gid].oppMarker == 'B'){
+        ctx.fillStyle="black";
+    }
+    else {
+        ctx.fillStyle="white";
+    }
+    ctx.fill();
+}

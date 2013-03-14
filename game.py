@@ -12,6 +12,7 @@ class Game(object):
         self.players = [player]
         self.gamestate = ""
         self.currPlayerIndex = -1
+        self.playerMarkers = None
 
     def getCurrPlayer(self):
         return self.players[self.currPlayerIndex]
@@ -19,6 +20,16 @@ class Game(object):
     def getOtherPlayer(self):
         otherIndex = (self.currPlayerIndex + 1) % 2
         return self.players[otherIndex]
+
+    def getCurrMarker(self):
+        return self.playerMarkers[self.currPlayerIndex]
+
+    def getOppMarker(self):
+        otherIndex = (self.currPlayerIndex + 1) % 2
+        return self.playerMarkers[otherIndex]
+    
+    def switchPlayer(self):
+        self.currPlayerIndex = (self.currPlayerIndex + 1) % 2
 
 class TicTacToe(Game):
     
@@ -28,13 +39,6 @@ class TicTacToe(Game):
         self.board = createBoard(3)
         self.updateGamestate()      
         self.totalMoves = 9
-
-    def getCurrMarker(self):
-        return self.playerMarkers[self.currPlayerIndex]
-
-    def getOppMarker(self):
-        otherIndex = (self.currPlayerIndex + 1) % 2
-        return self.playerMarkers[otherIndex]
 
     def move(self, move, sid):
         m = move.split()
@@ -63,9 +67,6 @@ class TicTacToe(Game):
         self.gamestate = state
         print 'game state is: ' + state
 
-    def switchPlayer(self):
-        self.currPlayerIndex = (self.currPlayerIndex + 1) % 2
-    
     def checkForWinner(self, row, col):
         winner = self.checkRows(row) or self.checkCols(col) or self.checkForwardDiagonal() or self.checkBackwardDiagonal()
         tied = True if not winner and self.totalMoves == 0 else False
@@ -101,8 +102,16 @@ class TicTacToe(Game):
 class Go(Game):
 
     def __init__(self, type, player):
-        super(self).__init__(type, player)
+        super(Go, self).__init__(type, player)
+        self.playerMarkers = ['B', 'W']
         self.board = createBoard(3)
+
+    def move(self, move, sid):
+        if self.getCurrPlayer() == sid:
+            self.switchPlayer()
+            return (True, 'Success', False, False)
+        else:
+            return (False, 'User is not current player', False, False)
 
 def createBoard(size):
     board = []
@@ -115,7 +124,8 @@ def createBoard(size):
 def buildNewGame(type, sid):
     if type == 'tictactoe':
         return TicTacToe(type, sid)
-    else: return Go(type, sid)
+    else: 
+        return Go(type, sid)
 
 def generateNewId():
     global ID_GENERATOR

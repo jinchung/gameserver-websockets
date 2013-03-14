@@ -9,11 +9,29 @@ body
     margin:auto;
 }
 
-#board 
+.gamePlay
+{
+    margin:auto;
+    text-align:center;
+}
+
+.t3board 
 {
     width:160px;
     margin:auto;
     text-align:center;
+    border:2px solid;
+}
+
+.goboard
+{
+    width:600px;
+    margin:auto;
+    text-align:center;
+    border:2px solid;
+    background-image:url('goboard.png');
+    background-repeat:no-repeat;
+    background-position:center;
 }
 
 .t3button 

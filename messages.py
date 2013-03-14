@@ -11,9 +11,10 @@ class RequestMessage(object):
         self.move = move
         
 class ResponseMessage(object):
-    def __init__(self, type, gameId, gamestate, msg, isCurrPlayer, lastMove=None, currMarker=None, oppMarker=None):
+    def __init__(self, type, gameId, gameType, gamestate, msg, isCurrPlayer, lastMove=None, currMarker=None, oppMarker=None):
         self.type = type
         self.gameId = gameId
+        self.gameType = gameType
         self.gamestate = gamestate
         self.msg = msg
         self.isCurrPlayer = isCurrPlayer
