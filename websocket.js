@@ -151,10 +151,10 @@ function placeGoMarker(canvas, evt, gid){
             ctx.fillStyle="white";
         }
         ctx.fill();
-        alert('rect left is ' + rect.left + ' rect top is ' + rect.top);
-        alert('client x is ' + evt.clientX);
-        alert('client y is ' + evt.clientY);
-        move= evt.clientX + ' ' + evt.clientY;
+        //alert('rect left is ' + rect.left + ' rect top is ' + rect.top);
+        //alert('client x is ' + evt.clientX);
+        //alert('client y is ' + evt.clientY);
+        move= x + ' ' + y;
         moveMsg = "{'type': 'move', 'gameId': " + gid + ", 'gameType': 'go', 'move': '" + move + "'}";
         ws.send(moveMsg);
         allGames[gid].isCurrPlayer = false;
@@ -200,14 +200,14 @@ function updateTicTacToeBoard(gid, move){
 function updateGoBoard(gid, move){
     canvas = document.getElementById("goboard");
     ctx = canvas.getContext("2d");
-    rect=canvas.getBoundingClientRect();
+    //rect=canvas.getBoundingClientRect();
     mvs = move.split(" ");
-    x=mvs[0] - rect.left;
-    y=mvs[1] - rect.top;
-    alert('rect left is ' + rect.left);
-    alert('rect right is ' + rect.top);
-    alert('x is ' + mvs[0]);
-    alert('y is ' + mvs[1]);
+    x=mvs[0]; //- rect.left;
+    y=mvs[1]; ///- rect.top;
+    //alert('rect left is ' + rect.left);
+    //alert('rect right is ' + rect.top);
+    //alert('x is ' + mvs[0]);
+    //alert('y is ' + mvs[1]);
     ctx.beginPath();
     ctx.arc(x, y, 10, 0, 2 * Math.PI, false);
     if (allGames[gid].oppMarker == 'B'){
