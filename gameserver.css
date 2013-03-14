@@ -20,7 +20,6 @@ body
     width:160px;
     margin:auto;
     text-align:center;
-    border:2px solid;
 }
 
 .goboard
@@ -28,7 +27,6 @@ body
     width:600px;
     margin:auto;
     text-align:center;
-    border:2px solid;
     background-image:url('goboard.png');
     background-repeat:no-repeat;
     background-position:center;

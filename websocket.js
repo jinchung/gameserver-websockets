@@ -34,7 +34,7 @@ function Game(gameId, gameType, currMarker, oppMarker, isCurrPlayer){
 }
 
 function createWebsocket(newgamereq){
-    ws = new WebSocket("ws://localhost:8888/gameserver"); 
+    ws = new WebSocket("ws://10.5.97.18:8888/gameserver"); 
     ws.onopen = function() {ws.send(newgamereq);};
     ws.onmessage = function(evt) {
         var gameMsg = JSON.parse(evt.data);
@@ -88,6 +88,7 @@ function addGameToArena(gid, gameType){
     gameId.className="gameId";
     gameId.innerHTML="Game ID: " + gid;
 
+    arena.innerHTML= '';
     arena.appendChild(gamePlay);
     gamePlay.appendChild(announce);
     gamePlay.appendChild(board);
@@ -160,7 +161,7 @@ function placeGoMarker(canvas, evt, gid){
         allGames[gid].isCurrPlayer = false;
     } 
     else {
-        alert('Not your turn. SIMMA DOWN.');
+        alert('no. simma down.');
     }
 }
 
@@ -173,7 +174,7 @@ function selectButton(b, gid, gameType){
         allGames[gid].isCurrPlayer = false;
     }
     else {
-        alert('Not your turn. SIMMA DOWN.');
+        alert('no. simma down.');
     }
 }
 

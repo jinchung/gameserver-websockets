@@ -14,7 +14,7 @@
         
             function createNewSocket(){
                 console.log("Creating a new socket...");
-                var ws = new WebSocket("ws://localhost:8888/gameserver");
+                var ws = new WebSocket("ws://10.5.97.18:8888/gameserver");
                 ws.onopen = function(evt){ws.send(newgamereq);};
                 ws.onmessage = function(evt){document.getElementById("announcements").innerHTML = evt.data;};
                 return ws;
