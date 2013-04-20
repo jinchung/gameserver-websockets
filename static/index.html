@@ -6,13 +6,21 @@
     <link rel="stylesheet" type="text/css" href="gameserver.css" >
     <script src="http://code.jquery.com/jquery.min.js"></script>
     <script src="websocket.js"></script>
+
+    <script>
+        $(document).ready(function () { 
+                start("ws://localhost:8888/gameserver");
+        }); 
+    </script>
+
   </head>
  
   <body>
     <h1>Game Server</h1>
     <div>
     <form name="newgameform">
-        <input type="radio" name="gameType" id="tictactoe" value="tictactoe" checked="checked" />
+        <input type="radio" name="gameType" id="tictactoe" 
+               value="tictactoe" checked="checked" />
         <label for="tictactoe">Tic Tac Toe</label>
         <br />
         <input type="radio" name="gameType" id="go" value="go"/>

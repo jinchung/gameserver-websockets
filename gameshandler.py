@@ -1,24 +1,21 @@
 """ Game Server """
 
 import socket
-import game
 import random
-import messages as m
 import json
+
+import server
+import messages as m
+import game
 
 games_in_play = {}
 games_pending = {}
-server = None
 
 games_pending["tictactoe"] = []
 games_pending["connect4"] = []
 games_pending["chess"] = []
 games_pending["checkers"] = []
 games_pending["go"] = []
-
-def setServerHandler(serverHandler):
-    global server
-    server = serverHandler
 
 def handleIncomingMsg(data, sid):
     try:

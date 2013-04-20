@@ -2,35 +2,38 @@ import tornado.httpserver
 import tornado.websocket
 import tornado.ioloop
 import tornado.web
-import gameshandler as gh
 import uuid
 
+import gameshandler 
+
+clients = {}
+
+def sendMessage(cid, msg):
+    clients[cid].write_message(msg)
+
 class GameServerHandler(tornado.websocket.WebSocketHandler):
-    clients = {}
 
     def open(self):
-        gh.setServerHandler(self)
         self.id = uuid.uuid1()
-        self.clients[self.id] = self
+        clients[self.id] = self
         print "WebSocket opened!"
 
     def on_message(self, message):
         print "Received a message %s from %d" % (message, self.id)
-        gh.handleIncomingMsg(message, self.id)
+        gameshandler.handleIncomingMsg(message, self.id)
 
     def on_close(self):
-        del self.clients[self.id]
+        del clients[self.id]
         print "WebSocket closed."
     
-    def sendMessage(self, cid, msg):
-        self.clients[cid].write_message(msg)
 
 application = tornado.web.Application([
     (r"/gameserver", GameServerHandler),
 ])
 
 if __name__ == "__main__":
+    port = 8888
     http_server = tornado.httpserver.HTTPServer(application)
-    http_server.listen(8888)
-    print 'server is listening'
+    http_server.listen(port)
+    print 'server is listening on port 0.0.0.0:%d' % (port,)
     tornado.ioloop.IOLoop.instance().start()

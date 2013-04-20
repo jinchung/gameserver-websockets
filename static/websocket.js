@@ -1,8 +1,7 @@
 var ws = null; 
 var allGames = new AllGames();
 
-$(document).ready(function () {
-
+function start(ws_url) { 
     $("#gamestart").click(function(evt) {
         evt.preventDefault();
         var gameTypeResults = document.getElementsByName("gameType");
@@ -12,20 +11,19 @@ $(document).ready(function () {
                 gameType = gameTypeResults[i].id;
             }   
         }
-        newgamereq = "{'type': 'new', 'gameId': None, 'gameType': '" + gameType + "', 'move': None}";
+        newgamereq = {type: 'new', gameId: null, gameType: gameType, move: null};
         if (ws == null) {
-            createWebsocket(newgamereq);
+            ws = createWebsocket(JSON.stringify(newgamereq), ws_url);
         } else {
-            ws.send(newgamereq);
+            ws.send(JSON.stringify(newgamereq));
         }
     });
-
-});
+}
 
 function AllGames(){
 }
 
-function Game(gameId, gameType, currMarker, oppMarker, isCurrPlayer){
+var Game = function (gameId, gameType, currMarker, oppMarker, isCurrPlayer){
     this.gameId = gameId;
     this.gameType = gameType;
     this.currMarker = currMarker;
@@ -33,9 +31,9 @@ function Game(gameId, gameType, currMarker, oppMarker, isCurrPlayer){
     this.isCurrPlayer = isCurrPlayer;
 }
 
-function createWebsocket(newgamereq){
-    ws = new WebSocket("ws://10.5.97.18:8888/gameserver"); 
-    ws.onopen = function() {ws.send(newgamereq);};
+function createWebsocket(newgamereq, ws_url){
+    var ws = new WebSocket(ws_url);
+    ws.onopen = function(){ws.send(newgamereq);};
     ws.onmessage = function(evt) {
         var gameMsg = JSON.parse(evt.data);
         switch(gameMsg.type){
@@ -68,6 +66,7 @@ function createWebsocket(newgamereq){
             document.getElementById("globalMsg").innerHTML = '';
         }
     };
+    return ws;
 }
 
 function addGameToArena(gid, gameType){
